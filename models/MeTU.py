@@ -10,6 +10,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from PIL import Image
 from transformers import logging
+from fvcore.nn import FlopCountAnalysis, parameter_count_table
+
 
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utils.iou import iou_component, iou_calculation
@@ -106,26 +108,23 @@ class RefinementBlock(nn.Module):
 
         self.d_conv = nn.Sequential(
             DWConv(ch, ch, dilation=2, padding=1),
-            nn.ReLU(inplace=True),
         )
         self.ca = CoordinateAttention(ch, ch)
-        self.fuse_conv = nn.Conv2d(ch * 2, ch, kernel_size=1)
-        self.bn = nn.BatchNorm2d(ch)
 
     def forward(self, x):
         res = x
         x_dw = self.act1(self.dw(x))
         x_ca = self.ca(x_dw)
         x_d = self.d_conv(x)
-        fused = torch.cat([x_ca, x_d], dim=1)
-        out = F.relu(self.bn(self.fuse_conv(fused)) + res, inplace=True)
+
+        out = F.relu(x_ca + x_d + res, inplace=True)
         return out
 
 
 class DecoderBlock(nn.Module):
-    def __init__(self, in_channels, skip_channels, out_channels):
+    def __init__(self, in_channels, skip_channels, out_channels, use_refine=True):
         super().__init__()
-
+        self.use_refine = use_refine
         self.upsample = nn.Upsample(
             scale_factor=2, mode="bilinear", align_corners=False
         )
@@ -137,7 +136,8 @@ class DecoderBlock(nn.Module):
             nn.ReLU(inplace=True),
         )
 
-        self.refine = RefinementBlock(out_channels)
+        if self.use_refine:
+            self.refine = RefinementBlock(out_channels)
 
     def forward(self, x, skip):
         x = self.upsample(x)
@@ -148,7 +148,9 @@ class DecoderBlock(nn.Module):
 
         x = torch.cat([x, skip], dim=1)
         x = self.fuse(x)
-        x = self.refine(x)
+
+        if self.use_refine:
+            x = self.refine(x)
         return x
 
 
@@ -170,15 +172,17 @@ class MeTU(nn.Module):
         self.decoder_blocks = nn.ModuleList()
 
         MIN_CH = 64
-        for skip_ch in encoder_channels[:-1][::-1]:
+        for i, skip_ch in enumerate(encoder_channels[:-1][::-1]):
             out_ch = max(skip_ch, MIN_CH)
-            self.decoder_blocks.append(DecoderBlock(in_ch, skip_ch, out_ch))
+            use_refine = True if i < 2 else False
+            self.decoder_blocks.append(
+                DecoderBlock(in_ch, skip_ch, out_ch, use_refine=use_refine)
+            )
             in_ch = out_ch
 
         self.final_conv = nn.Sequential(
             nn.Upsample(scale_factor=2, mode="bilinear", align_corners=False),
-            nn.Conv2d(in_ch, in_ch, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(in_ch),
+            DWConv(in_ch, in_ch, kernel=3, padding=1),
             nn.ReLU(inplace=True),
             nn.Conv2d(in_ch, self.classes, kernel_size=1),
         )
@@ -383,7 +387,7 @@ if __name__ == "__main__":
 
     model = lt_MeTU(
         learning_rate=1e-3,
-        model_size="xxs",
+        model_size="xs",
         encoder_pretrained=True,
         classes=19,
         ingnore_index=255,
