@@ -10,14 +10,12 @@ import wandb
 from pathlib import Path
 from lightning.pytorch.loggers import WandbLogger
 from models.modelzoo import lt_segformerb0, lt_mobilevit_dlv3, lt_lraspp_mv3
-from models.MeTU_new import lt_MeTU
+from models.MeTU import lt_MeTU
 from torch.utils.data import DataLoader
 
 MODEL_NAME = "[MeTU-xxs]-v3"
-# MODEL_NAME = "MobileViT-DL_V3-xs"
-# MODEL_NAME = "LRASPP_MV3"
-DATE = "0227"
-DATASET_NAME = "Cityscapes"
+DATE = "0301"
+DATASET_NAME = "VOC2012"
 BEST_MODEL_PATH = f"./logs/{DATASET_NAME}/{DATE}/{MODEL_NAME}/best"
 
 
@@ -42,8 +40,8 @@ if DATASET_NAME == "Cityscapes":
 elif DATASET_NAME == "VOC2012":
     from datasets.VOC2012 import (
         VOC2012,
-        Traintransforms,
-        Valtransforms,
+        TrainTransforms,
+        ValTransforms,
         load_weight_sampler,
     )
 
