@@ -1,14 +1,13 @@
 import json
 import torch
 import numpy as np
-import matplotlib.pyplot as plt
-import torchvision.transforms as T
-import torchvision.transforms.functional as F
 
 from PIL import Image
 from typing import Union
 from pathlib import Path
 from torch.utils.data import Dataset
+from torchvision import tv_tensors
+from torchvision.transforms import v2
 
 cfg_path = Path("../../data/VOC2012/eda/cfg/meta_info.json")
 weights_pt_path = Path("../../data/VOC2012/eda/cfg/train_sampler_weights.pt")
@@ -30,7 +29,7 @@ class VOC2012(Dataset):
 
     Args:
         mode(str): "train", "val", "test"
-        transforms
+        transforms: torchvision.transforms.v2 Compose object
     """
 
     def __init__(self, mode: str = "train", transforms=None):
@@ -49,92 +48,59 @@ class VOC2012(Dataset):
         image = Image.open(self.image_path[index]).convert("RGB")
         mask = Image.open(self.mask_path[index]).convert("L")
 
+        image = tv_tensors.Image(image)
+        mask = tv_tensors.Mask(mask)
+
         if self.transforms:
             image, mask = self.transforms(image, mask)
+
+        mask = torch.as_tensor(mask, dtype=torch.long)
+
+        if mask.ndim == 3:
+            mask = mask.squeeze(0)
 
         return image, mask
 
 
 class TrainTransforms:
-    def __init__(
-        self,
-        size=(512, 512),
-        hflip_prob=0.5,
-        color_jitter_prob=0.5,
-        gamma_prob=0.3,
-        blur_prob=0.3,
-        noise_prob=0.2,
-        auto_contrast_prob=0.3,
-    ):
-        self.size = size
-        self.hflip_prob = hflip_prob
-        self.hflip_prob = hflip_prob
-        self.color_jitter_prob = color_jitter_prob
-        self.gamma_prob = gamma_prob
-        self.blur_prob = blur_prob
-        self.noise_prob = noise_prob
-        self.auto_contrast_prob = auto_contrast_prob
-        self.color_jitter = T.ColorJitter(
-            brightness=0.3, contrast=0.3, saturation=0.3, hue=0.1
+    def __init__(self, size=(512, 512)):
+        self.transforms = v2.Compose(
+            [
+                v2.RandomResizedCrop(size=size, scale=(0.5, 2.0), antialias=True),
+                v2.RandomHorizontalFlip(p=0.5),
+                v2.RandomApply(
+                    [
+                        v2.ColorJitter(
+                            brightness=0.3, contrast=0.3, saturation=0.3, hue=0.1
+                        )
+                    ],
+                    p=0.5,
+                ),
+                v2.RandomApply(
+                    [v2.GaussianBlur(kernel_size=(5, 5), sigma=(0.1, 2.0))], p=0.3
+                ),
+                v2.ToDtype(torch.float32, scale=True),
+                v2.Normalize(mean=CFG["train"]["mean"], std=CFG["train"]["std"]),
+            ]
         )
-        self.gausian_blur = T.GaussianBlur(kernel_size=(5), sigma=(0.1, 2.0))
 
-        self.image_interp = T.InterpolationMode.BILINEAR
-        self.mask_interp = T.InterpolationMode.NEAREST
-
-    def __call__(self, image: Image.Image, mask: Image.Image):
-        image = F.resize(image, self.size, interpolation=self.image_interp)
-        mask = F.resize(mask, self.size, interpolation=self.mask_interp)
-
-        if torch.rand(1) < self.hflip_prob:
-            image = F.hflip(image)
-            mask = F.hflip(mask)
-
-        if torch.rand(1) < self.color_jitter_prob:
-            image = self.color_jitter(image)
-
-        if torch.rand(1) < self.gamma_prob:
-            gamma = torch.empty(1).uniform_(0.5, 2.0).item()
-            image = F.adjust_gamma(image, gamma)
-
-        if torch.rand(1) < self.auto_contrast_prob:
-            image = F.autocontrast(image)
-
-        blur_noise_rand = torch.rand(1)
-
-        if blur_noise_rand < self.blur_prob:
-            image = self.gausian_blur(image)
-
-        elif blur_noise_rand < self.blur_prob + self.noise_prob:
-            image_tensor = F.to_tensor(image)
-            noise = torch.rand_like(image_tensor) * 0.05
-            image_tensor = torch.clamp(image_tensor + noise, 0.0, 1.0)
-            image = F.to_pil_image(image_tensor)
-
-        if isinstance(image, Image.Image):
-            image = F.to_tensor(image)
-
-        image = F.normalize(image, mean=CFG["train"]["mean"], std=CFG["train"]["std"])
-        mask = torch.as_tensor(np.array(mask), dtype=torch.long)
-
-        return image, mask
+    def __call__(self, image, mask):
+        return self.transforms(image, mask)
 
 
 class ValTransforms:
-    def __init__(self, size=(512, 512)):
-        self.size = size
-        self.image_interp = F.InterpolationMode.BILINEAR
-        self.mask_interp = F.InterpolationMode.NEAREST
+    def __init__(self, size=512):
+        self.transforms = v2.Compose(
+            [
+                v2.Resize(size, antialias=True),
+                v2.CenterCrop(size),
+                v2.ToDtype(torch.float32, scale=True),
+                v2.Normalize(mean=CFG["train"]["mean"], std=CFG["train"]["std"]),
+            ]
+        )
 
     def __call__(self, image, mask):
-        image = F.resize(image, self.size, interpolation=self.image_interp)
-        mask = F.resize(mask, self.size, interpolation=self.mask_interp)
-
-        image = F.to_tensor(image)
-        image = F.normalize(image, mean=CFG["train"]["mean"], std=CFG["train"]["std"])
-        mask = torch.as_tensor(np.array(mask), dtype=torch.long)
-
-        return image, mask
+        return self.transforms(image, mask)
 
 
 def load_weight_sampler(
