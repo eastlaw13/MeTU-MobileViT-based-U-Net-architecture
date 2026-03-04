@@ -71,13 +71,13 @@ To validate the practical applicability and inference stability of MeTU in real-
 | **MeTU-xxs (Ours)** | **1.0** | **83.02** | **82.99** | **83.42** | **84.09** | **12.04** |
 | MobileViT-xs + DeepLab V3 | 2.9 | 98.96 | 98.92 | 99.36 | 100.31 | 10.11 |
 | Segformer-B0 | 3.7 | 124.75 | 124.69 | 125.19 | 126.61 | 8.02 |
-| **MeTU-xs (Ours)** | **2.0** | **134.30** | **134.18** | **136.27** | **136.87** | **7.51** |
+| **MeTU-xs (Ours)** | **2.0** | **134.30** | **134.18** | **135.93** | **136.87** | **7.51** |
 
 ### 🛠 Edge Hardware & Bottleneck Analysis
 
 * **High Execution Stability (Low Jitter):** For **MeTU-xxs**, the difference between the median (P50: 82.99ms) and the worst-case (P99: 84.09ms) is merely **~1.1ms**. This extremely low variance proves that our architecture guarantees highly predictable latency on edge CPUs, making it exceptionally reliable for continuous real-time execution.
 * **The Ultimate Balance (Accuracy vs. Speed):** While `LRASPP` operates at an extreme 76 FPS, it suffers from a significant mIoU drop (~58% in our Cityscapes evaluation). Conversely, **MeTU-xxs** strikes the optimal Pareto frontier, achieving near SOTA-level accuracy (~67% mIoU) while maintaining a highly practical **12.04 FPS** directly on a standard ARM CPU.
-* **Architecture Hardware Constraints (Memory vs. Compute):** Despite having fewer parameters (2.0M), MeTU-xs runs slower (7.45 FPS) than MobileViT-xs+DeepLab V3 (2.9M, 10.11 FPS). This empirically proves that U-Net's high-resolution skip-connections create a **Memory-Bound** bottleneck on the Raspberry Pi's limited memory bandwidth, whereas ASPP modules are more **Compute-Bound** and cache-friendly.
+* **Architecture Hardware Constraints (Memory vs. Compute):** Despite having fewer parameters (2.0M), MeTU-xs runs slower (7.51 FPS) than MobileViT-xs+DeepLab V3 (2.9M, 10.11 FPS). This empirically proves that U-Net's high-resolution skip-connections create a **Memory-Bound** bottleneck on the Raspberry Pi's limited memory bandwidth, whereas ASPP modules are more **Compute-Bound** and cache-friendly.
 * **The ONNX INT8 Overhead Anomaly:** Interestingly, deploying INT8 models actually *decreased* the throughput for all MobileViT-based architectures (e.g., MeTU-xxs dropped from 12.04 to 11.87 FPS). Since the Cortex-A72 CPU lacks dedicated INT8 tensor cores, the quantization/dequantization operations in ONNX Runtime introduce overhead that outweighs the computational savings for hybrid (CNN+Transformer) structures.
 
 ---
