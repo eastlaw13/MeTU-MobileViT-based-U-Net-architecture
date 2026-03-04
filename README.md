@@ -71,7 +71,7 @@ To validate the practical applicability and inference stability of MeTU in real-
 | **MeTU-xxs (Ours)** | **1.0** | **83.02** | **82.99** | **83.42** | **84.09** | **12.04** |
 | MobileViT-xs + DeepLab V3 | 2.9 | 98.96 | 98.92 | 99.36 | 100.31 | 10.11 |
 | Segformer-B0 | 3.7 | 124.75 | 124.69 | 125.19 | 126.61 | 8.02 |
-| **MeTU-xs (Ours)** | **2.0** | **134.30** | **133.95** | **136.37** | **137.27** | **7.45** |
+| **MeTU-xs (Ours)** | **2.0** | **134.30** | **134.18** | **136.27** | **136.87** | **7.51** |
 
 ### 🛠 Edge Hardware & Bottleneck Analysis
 
