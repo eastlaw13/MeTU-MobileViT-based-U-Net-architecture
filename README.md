@@ -60,7 +60,7 @@ To validate reliability in real-world, out-of-distribution (OOD) scenarios, we b
 | MobileViT + DeepLab V3 (xs) | 61.97 | 45.41 |
 
 * **Overall Resilience:** MeTU-xs secures the highest overall robustness score (**50.90% mPC**). Even the ultra-lightweight MeTU-xxs (1.02M params) closely follows Segformer-b0 (3.72M params).
-* **CNN vs. Transformer Trade-off:** While Segformer's global attention acts as a low-pass filter to slightly better resist severe high-frequency noise (like heavy `frost` or `zoom_blur`), MeTU's skip-connections occasionally propagate this noise into the decoder. Recognizing this trade-off is crucial for future architectural enhancements.
+* **CNN vs. Transformer Trade-off:** While Segformer's global attention acts as a low-pass filter to slightly better resist severe high-frequency noise (like heavy `frost` or `snow`), MeTU's skip-connections occasionally propagate this noise into the decoder. Recognizing this trade-off is crucial for future architectural enhancements.
 
 ---
 
