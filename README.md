@@ -41,7 +41,7 @@ We evaluated MeTU on both rigid urban scenes (Cityscapes) and non-rigid general 
 ---
 
 ## 3. Robustness in Adverse Conditions (Cityscapes-C)
-< div align= "center">
+<div align= "center">
     <a href="https://youtu.be/k2GShFCuxqQ">
         <img src="https://img.youtube.com/vi/https://youtu.be/k2GShFCuxqQ/maxresdefault.jpg" alt="MeTU Robustness Demo Video" width="80%">
     </a>
