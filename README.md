@@ -41,6 +41,14 @@ We evaluated MeTU on both rigid urban scenes (Cityscapes) and non-rigid general 
 ---
 
 ## 3. Robustness in Adverse Conditions (Cityscapes-C)
+< div align= "center">
+    <a href="https://youtu.be/k2GShFCuxqQ">
+        <img src="https://img.youtube.com/vi/https://youtu.be/k2GShFCuxqQ/maxresdefault.jpg" alt="MeTU Robustness Demo Video" width="80%">
+    </a>
+    <br>
+    <em>Visualization of MeTU-xs robustness against varying out-of-distribution (OOD) corruptions. (Click to watch the full demo)</em>
+</div>
+
 
 To validate reliability in real-world, out-of-distribution (OOD) scenarios, we benchmarked the models against 13 different corruption types across 5 severity levels.
 
