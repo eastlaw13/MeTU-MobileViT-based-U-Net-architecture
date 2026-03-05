@@ -5,7 +5,7 @@
 
 ## 1. Project Overview
 
-**MeTU-v3** is a highly optimized, lightweight semantic segmentation model designed for resource-constrained edge devices. By integrating a **MobileViT** backbone with a **U-Net** based decoder, MeTU effectively captures both global context and high-resolution spatial details. This project comprehensively evaluates the architecture against SOTA lightweight models across urban driving scenes, general objects, adverse weather conditions, and actual edge hardware (Raspberry Pi 4B).
+**MeTU** is a highly optimized, lightweight semantic segmentation model designed for resource-constrained edge devices. By integrating a **MobileViT** backbone with a **U-Net** based decoder, MeTU effectively captures both global context and high-resolution spatial details. This project comprehensively evaluates the architecture against SOTA lightweight models across urban driving scenes, general objects, adverse weather conditions, and actual edge hardware (Raspberry Pi 4B).
 
 ---
 
