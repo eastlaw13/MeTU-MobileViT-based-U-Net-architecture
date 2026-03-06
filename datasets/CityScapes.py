@@ -10,6 +10,8 @@ from PIL import Image
 from typing import Union
 from pathlib import Path
 from torch.utils.data import Dataset
+from torchvision.transforms import v2
+from torchvision import tv_tensors
 
 cfg_path = Path("../../data/CityScapes/eda/cfg/meta_info.json")
 weights_pt_path = Path("../../data/CityScapes/eda/cfg/train_sampler_weights.pt")
@@ -47,116 +49,83 @@ class CityScapes(Dataset):
         return len(self.image_path)
 
     def __getitem__(self, idx):
-        img = Image.open(self.image_path[idx]).convert("RGB")
-        msk = Image.open(self.mask_path[idx])
+        image = Image.open(self.image_path[idx]).convert("RGB")
+        mask = Image.open(self.mask_path[idx])
+
+        image = tv_tensors.Image(image)
+        mask = tv_tensors.Mask(mask)
 
         if self.transforms:
-            img, msk = self.transforms(img, msk)
+            image, mask = self.transforms(image, mask)
 
-        return img, msk
+        mask = torch.as_tensor(mask, dtype=torch.long)
+
+        if mask.ndim == 3:
+            mask = mask.squeeze(0)
+        return image, mask
 
 
 class TrainTransforms:
-    def __init__(
-        self,
-        crop_size=(512, 1024),
-        hflip_prob=0.5,
-        color_jitter_prob=0.5,
-        gamma_prob=0.3,
-        blur_prob=0.2,
-        noise_prob=0.2,
-        autocontrast_prob=0.3,
-    ):
-        self.min_scale = 0.5
-        self.max_scale = 2.0
-        self.crop_size = crop_size
-        self.hflip_prob = hflip_prob
-        self.color_jitter_prob = color_jitter_prob
-        self.gamma_prob = gamma_prob
-        self.blur_prob = blur_prob
-        self.noise_prob = noise_prob
-        self.autocontrast_prob = autocontrast_prob
-        self.color_jitter = T.ColorJitter(
-            brightness=0.3, contrast=0.3, saturation=0.3, hue=0.1
+    def __init__(self, size=(512, 1024)):
+        self.spatial_transforms = v2.Compose(
+            [
+                v2.ScaleJitter(target_size=(1024, 2048), scale_range=(0.5, 2.0)),
+                v2.RandomCrop(
+                    size=size,
+                    pad_if_needed=True,
+                    fill={tv_tensors.Image: 0, tv_tensors.Mask: 255},
+                ),
+                v2.RandomHorizontalFlip(p=0.5),
+            ]
         )
-        self.gausian_blur = T.GaussianBlur(kernel_size=(5), sigma=(0.1, 2.0))
+
+        self.color_transforms = v2.Compose(
+            [
+                v2.RandomApply(
+                    [
+                        v2.ColorJitter(
+                            brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1
+                        )
+                    ],
+                    p=0.5,
+                ),
+                v2.RandomApply([v2.AugMix(severity=3, mixture_width=3)], p=0.3),
+            ]
+        )
+
+        self.final_transforms = v2.Compose(
+            [
+                v2.ToDtype(
+                    dtype={
+                        tv_tensors.Image: torch.float32,
+                        tv_tensors.Mask: torch.int64,
+                    },
+                    scale=True,
+                ),
+                v2.Normalize(mean=[0.288, 0.326, 0.285], std=[0.186, 0.189, 0.186]),
+            ]
+        )
 
     def __call__(self, image, mask):
-
-        # Random scaling
-        scale = random.uniform(self.min_scale, self.max_scale)
-        target_h, target_w = int(1024 * scale), int(2048 * scale)
-
-        image = F.resize(
-            image, (target_h, target_w), interpolation=T.InterpolationMode.BILINEAR
-        )
-        mask = F.resize(
-            mask, (target_h, target_w), interpolation=T.InterpolationMode.NEAREST
-        )
-
-        if target_h < self.crop_size[0] or target_w < self.crop_size[1]:
-            pad_h = max(0, self.crop_size[0] - target_h)
-            pad_w = max(0, self.crop_size[1] - target_w)
-            image = F.pad(image, (0, 0, pad_w, pad_h), fill=(73, 83, 73))
-            mask = F.pad(mask, (0, 0, pad_w, pad_h), fill=255)
-
-        i, j, h, w = T.RandomCrop.get_params(image, output_size=self.crop_size)
-        image = F.crop(image, i, j, h, w)
-        mask = F.crop(mask, i, j, h, w)
-
-        if torch.rand(1) < self.hflip_prob:
-            image = F.hflip(image)
-            mask = F.hflip(mask)
-
-        if torch.rand(1) < self.color_jitter_prob:
-            image = self.color_jitter(image)
-
-        if torch.rand(1) < self.gamma_prob:
-            gamma = torch.empty(1).uniform_(0.7, 1.3).item()
-            image = F.adjust_gamma(image, gamma)
-
-        if torch.rand(1) < self.autocontrast_prob:
-            image = F.autocontrast(image)
-
-        blur_noise_rand = torch.rand(1)
-
-        if blur_noise_rand < self.blur_prob:
-            image = self.gausian_blur(image)
-        elif blur_noise_rand < self.blur_prob + self.noise_prob:
-            img_tensor = F.to_tensor(image)
-            noise = torch.randn_like(img_tensor) * 0.05
-            img_tensor = torch.clamp(img_tensor + noise, 0.0, 1.0)
-            image = F.to_pil_image(img_tensor)
-
-        image = F.to_tensor(image)
-        image = F.normalize(
-            image, mean=[0.288, 0.326, 0.285], std=[0.186, 0.189, 0.186]
-        )
-        mask = torch.as_tensor(np.array(mask), dtype=torch.long)
+        image, mask = self.spatial_transforms(image, mask)
+        image = self.color_transforms(image)
+        image, mask = self.final_transforms(image, mask)
 
         return image, mask
 
 
 class ValTransforms:
-    def __init__(self, target_size=(512, 1024)):
-        self.target_size = target_size
+    def __init__(self, size=(512, 1024)):
+        self.transforms = v2.Compose(
+            [
+                v2.Resize(size=size),
+                v2.ToDtype(torch.float32, scale=True),
+                v2.Normalize(mean=[0.288, 0.326, 0.285], std=[0.186, 0.189, 0.186]),
+            ]
+        )
 
     def __call__(self, image, mask):
-
-        image = F.resize(
-            image, self.target_size, interpolation=T.InterpolationMode.BILINEAR
-        )
-        mask = F.resize(
-            mask, self.target_size, interpolation=T.InterpolationMode.NEAREST
-        )
-
-        image = F.to_tensor(image)
-        image = F.normalize(
-            image, mean=[0.288, 0.326, 0.285], std=[0.186, 0.189, 0.186]
-        )
-        mask = torch.as_tensor(np.array(mask), dtype=torch.long)
-
-        return image, mask
+        return self.transforms(image, mask)
 
 
 def load_weight_sampler(
