@@ -30,46 +30,39 @@ from datasets.CityScapes import ValTransforms
 from utils.iou import iou_calculation, iou_component
 
 
-# ------------------------------------------------------------
-# Model configuration
-# ------------------------------------------------------------
-
 MODEL_LIST = [
     {
-        "name": "MeTU_xxs",
+        "name": "MeTU-xxs",
         "model": lt_MeTU,
-        "ckpt": "logs/Cityscapes/0227/[MeTU-xxs]-v3/best/mIoU=0.671.ckpt",
+        "ckpt": "logs/Cityscapes/0307/[MeTU-xxs]-v3_with_famix/best/mIoU=0.685.ckpt",
     },
     {
-        "name": "MeTU_xs",
+        "name": "MeTU-xs",
         "model": lt_MeTU,
-        "ckpt": "logs/Cityscapes/0228/[MeTU-xs]-v3/best/mIoU=0.707.ckpt",
+        "ckpt": "logs/Cityscapes/0307/[MeTU-xs]-v3_with_famix/best/mIoU=0.735.ckpt",
     },
     {
-        "name": "Segformer_b0",
+        "name": "Segformer-b0",
         "model": lt_segformerb0,
-        "ckpt": "logs/Cityscapes/0225/Segformer-b0/best/mIoU=0.676.ckpt",
+        "ckpt": "logs/Cityscapes/0307/Segformer-b0/best/mIoU=0.705.ckpt",
     },
     {
-        "name": "MobileViT_DeepLab_V3_xss",
+        "name": "MobileViT + DeepLab V3 - xss",
         "model": lt_mobilevit_dlv3,
-        "ckpt": "logs/Cityscapes/0225/MobileViT-DL_V3-xxs/best/mIoU=0.600.ckpt",
+        "ckpt": "logs/Cityscapes/0307/MobileViT-DL_V3-xxs/best/mIoU=0.615.ckpt",
     },
     {
-        "name": "MobileViT_DeepLab_V3_xs",
+        "name": "MobileViT + DeepLab V3 - xs",
         "model": lt_mobilevit_dlv3,
-        "ckpt": "logs/Cityscapes/0226/MobileViT-DL_V3-xs/best/mIoU=0.620.ckpt",
+        "ckpt": "logs/Cityscapes/0307/MobileViT-DL_V3-xs/best/mIoU=0.653.ckpt",
     },
     {
-        "name": "LRASPP-MobileNet_V3_xxs",
+        "name": "LRASPP-MobileNet V3 -xxs",
         "model": lt_lraspp_mv3,
-        "ckpt": "logs/Cityscapes/0226/LRASPP_MV3/best/mIoU=0.587.ckpt",
+        "ckpt": "logs/Cityscapes/0307/LRASPP_MV3_with_famix/best/mIoU=0.588.ckpt",
     },
 ]
 
-# ------------------------------------------------------------
-# Dataset
-# ------------------------------------------------------------
 
 subsample_image_path = Path("../../data/CityScapes/subsamples/images")
 subsample_mask_path = Path("../../data/CityScapes/subsamples/masks")
@@ -81,20 +74,12 @@ transforms = ValTransforms(target_size=(128, 256))
 
 device = torch.device("cpu")
 
-# ------------------------------------------------------------
-# Output folders
-# ------------------------------------------------------------
 
 os.makedirs("to_onnx/onnx_models/fp32", exist_ok=True)
 os.makedirs("to_onnx/onnx_models/fp16", exist_ok=True)
 os.makedirs("to_onnx/onnx_models/int8", exist_ok=True)
 
 dummy_input = torch.randn(1, 3, 128, 256)
-
-
-# ------------------------------------------------------------
-# Calibration Data Reader
-# ------------------------------------------------------------
 
 
 class CityscapesCalibrationReader(CalibrationDataReader):
@@ -125,49 +110,12 @@ class CityscapesCalibrationReader(CalibrationDataReader):
         return next(self.enum_data, None)
 
 
-# class CityscapesCalibrationReader(CalibrationDataReader):
-
-#     def __init__(self, image_list, transform):
-#         self.image_list = image_list[:50]
-#         self.transform = transform
-#         self.enum_data = None
-
-#     def get_next(self):
-
-#         if self.enum_data is None:
-
-#             data = []
-
-#             for img_path in self.image_list:
-
-#                 img = Image.open(img_path).convert("RGB")
-
-#                 img_tensor, _ = self.transform(img, img)
-
-#                 img_np = img_tensor.unsqueeze(0).numpy()
-
-#                 data.append({"input": img_np})
-
-#             self.enum_data = iter(data)
-
-#         return next(self.enum_data, None)
-
-
-# ------------------------------------------------------------
-# File size util
-# ------------------------------------------------------------
-
-
 def print_model_size(path):
 
     size = os.path.getsize(path) / (1024 * 1024)
 
     print(f"{Path(path).name} size : {size:.2f} MB")
 
-
-# ------------------------------------------------------------
-# Main loop
-# ------------------------------------------------------------
 
 for model_cfg in MODEL_LIST:
 
@@ -179,10 +127,6 @@ for model_cfg in MODEL_LIST:
 
     model = model_cfg["model"].load_from_checkpoint(model_cfg["ckpt"]).to(device)
     model.eval()
-
-    # ------------------------------------------------------------
-    # mIoU evaluation
-    # ------------------------------------------------------------
 
     inter_total = torch.zeros(19, dtype=torch.long)
     union_total = torch.zeros(19, dtype=torch.long)
@@ -219,17 +163,9 @@ for model_cfg in MODEL_LIST:
 
     print(f"{name} FP32 Subsample mIoU: {float(mIoU):.4f}")
 
-    # ------------------------------------------------------------
-    # Paths
-    # ------------------------------------------------------------
-
     fp32_path = f"to_onnx/onnx_models/fp32/{name}_fp32.onnx"
     fp16_path = f"to_onnx/onnx_models/fp16/{name}_fp16.onnx"
     int8_path = f"to_onnx/onnx_models/int8/{name}_int8.onnx"
-
-    # ------------------------------------------------------------
-    # FP32 export
-    # ------------------------------------------------------------
 
     print("Exporting FP32 ONNX...")
 
@@ -249,10 +185,6 @@ for model_cfg in MODEL_LIST:
 
     print_model_size(fp32_path)
 
-    # ------------------------------------------------------------
-    # FP16
-    # ------------------------------------------------------------
-
     print("Converting FP16...")
 
     fp16_model = float16.convert_float_to_float16(onnx_model)
@@ -261,16 +193,12 @@ for model_cfg in MODEL_LIST:
 
     print_model_size(fp16_path)
 
-    # ------------------------------------------------------------
-    # INT8 static quantization
-    # ------------------------------------------------------------
-
     print("Running INT8 static quantization...")
 
     calibration_reader = CityscapesCalibrationReader(
         image_path_list,
         transforms,
-        max_samples=500,  # 🔥 중요
+        max_samples=500,
     )
 
     quantize_static(
