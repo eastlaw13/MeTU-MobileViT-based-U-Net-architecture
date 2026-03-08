@@ -70,28 +70,46 @@ To validate reliability in real-world, out-of-distribution (OOD) scenarios, we b
 
 ---
 
-## 🚀 4. Edge Device Deployment: Raspberry Pi 4B
+##  4. Edge Device Deployment: Raspberry Pi 4B
 
-To validate the practical applicability and inference stability of MeTU in real-world edge scenarios, we benchmarked the models on a **Raspberry Pi 4B (4GB RAM, ARM Cortex-A72 CPU-only)** using ONNX Runtime. 
+To validate the practical applicability and inference stability of MeTU in real-world edge scenarios, we benchmarked the models on a **Raspberry Pi 4B (4GB RAM, ARM Cortex-A72 CPU-only)** using **ONNX Runtime**.
 
-* **Test Configurations:** 200 random images from Cityscapes (128x256 resolution), preceded by a 20-image warm-up phase to ensure cache stability.
-* **Metrics:** Beyond average latency, we report **P50, P90, and P99 tail latencies** to strictly evaluate the execution stability (jitter) required for real-time robotic systems.
+* **Test Configurations:** 200 random images from the **Cityscapes dataset (128×256 resolution)** were used for inference benchmarking. Each experiment was preceded by a **20-iteration warm-up phase using tensors with identical input resolution** to stabilize runtime caching and memory allocation.
+* **Metrics:** Beyond average latency, we report **P50, P90, and P99 tail latencies** to strictly evaluate the execution stability (runtime jitter) required for **real-time edge and robotic systems**.
+
+---
 
 ### 4.1. FP32 Inference Performance (Accuracy vs. Speed Trade-off)
+
 | Model | Params (M) | Average (ms) | P50 (ms) | P90 (ms) | P99 (ms) | Throughput (FPS) |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| LRASPP-MobileNet V3 (xxs) | 1.1 | 13.06 | 13.03 | 13.25 | 13.46 | 76.55 |
-| MobileViT-xxs + DeepLab V3 | 1.9 | 44.36 | 44.41 | 44.56 | 44.67 | 22.54 |
-| **MeTU-xxs (Ours)** | **1.0** | **83.02** | **82.99** | **83.42** | **84.09** | **12.04** |
-| MobileViT-xs + DeepLab V3 | 2.9 | 98.96 | 98.92 | 99.36 | 100.31 | 10.11 |
+| LRASPP - MobileNet v3 - xxs | 1.1 | 13.06 | 13.03 | 13.25 | 13.46 | 82.64 |
+| MobileViT-xxs + DeepLab v3 | 1.9 | 44.36 | 44.41 | 44.56 | 44.67 | 22.54 |
+| **MeTU-xxs (Ours)** | **1.0** | **83.02** | **82.99** | **83.42** | **84.09** | **12.17** |
+| MobileViT-xs + DeepLab v3 | 2.9 | 98.96 | 98.92 | 99.36 | 100.30 | 10.11 |
 | Segformer-B0 | 3.7 | 124.75 | 124.69 | 125.19 | 126.61 | 8.02 |
-| **MeTU-xs (Ours)** | **2.0** | **134.30** | **134.18** | **135.93** | **136.87** | **7.51** |
+| **MeTU-xs (Ours)** | **2.0** | **134.30** | **134.21** | **134.88** | **136.27** | **7.44** |
+
+---
 
 ### 🛠 Edge Hardware & Bottleneck Analysis
 
-* **High Execution Stability (Low Jitter):** For **MeTU-xxs**, the difference between the median (P50: 82.99ms) and the worst-case (P99: 84.09ms) is merely **~1.1ms**. This extremely low variance proves that our architecture guarantees highly predictable latency on edge CPUs, making it exceptionally reliable for continuous real-time execution.
-* **The Ultimate Balance (Accuracy vs. Speed):** While `LRASPP` operates at an extreme 76 FPS, it suffers from a significant mIoU drop (~58% in our Cityscapes evaluation). Conversely, **MeTU-xxs** strikes the optimal Pareto frontier, achieving near SOTA-level accuracy (~67% mIoU) while maintaining a highly practical **12.04 FPS** directly on a standard ARM CPU.
-* **Architecture Hardware Constraints (Memory vs. Compute):** Despite having fewer parameters (2.0M), MeTU-xs runs slower (7.51 FPS) than MobileViT-xs+DeepLab V3 (2.9M, 10.11 FPS). This empirically proves that U-Net's high-resolution skip-connections create a **Memory-Bound** bottleneck on the Raspberry Pi's limited memory bandwidth, whereas ASPP modules are more **Compute-Bound** and cache-friendly.
-* **The ONNX INT8 Overhead Anomaly:** Interestingly, deploying INT8 models actually *decreased* the throughput for all MobileViT-based architectures (e.g., MeTU-xxs dropped from 12.04 to 11.87 FPS). Since the Cortex-A72 CPU lacks dedicated INT8 tensor cores, the quantization/dequantization operations in ONNX Runtime introduce overhead that outweighs the computational savings for hybrid (CNN+Transformer) structures.
+* **High Execution Stability (Low Jitter):**  
+  For **MeTU-xxs**, the difference between the median (**P50: 82.99 ms**) and worst-case (**P99: 84.09 ms**) latency is only **~1.10 ms**.  
+  Similarly, **MeTU-xs** shows a small variance between **P50 (134.21 ms)** and **P99 (136.27 ms)** of roughly **~2.06 ms**.  
+  This low latency spread indicates **highly stable inference behavior**, which is crucial for deterministic execution in real-time robotic or embedded perception pipelines.
+
+* **Accuracy–Speed Trade-off on Edge CPUs:**  
+  `LRASPP-MobileNetV3` achieves extremely high throughput (**82.64 FPS**) due to its lightweight CNN-only design, but at the cost of significantly reduced segmentation accuracy.  
+  In contrast, **MeTU-xxs** provides a more balanced operating point, achieving competitive segmentation performance while maintaining **12.17 FPS** directly on a CPU-only Raspberry Pi.
+
+* **Architecture Hardware Constraints (Memory vs. Compute):**  
+  Although **MeTU-xs (2.0M parameters)** is smaller than **MobileViT-xs + DeepLabV3 (2.9M parameters)**, it runs slower (**7.44 FPS vs. 10.11 FPS**).  
+  This observation suggests that **U-Net-style skip connections and multi-scale feature fusion introduce additional memory traffic**, creating a **memory-bandwidth bottleneck** on the Raspberry Pi’s limited memory subsystem.  
+  By contrast, architectures dominated by convolutional or attention blocks with fewer high-resolution feature merges tend to be more **compute-bound and cache-friendly** on ARM CPUs.
+
+* **Implications for Edge Deployment:**  
+  These results highlight that **model size alone does not determine real-world performance on edge hardware**.  
+  Instead, architectural factors such as **memory access patterns, feature map resolution, and operator scheduling** play a critical role in determining inference throughput on resource-constrained CPUs.
 
 ---
