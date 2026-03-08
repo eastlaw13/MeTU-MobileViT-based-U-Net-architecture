@@ -15,7 +15,7 @@ This project provides a comprehensive evaluation of the architecture against SOT
 ---
 
 ## 2. Model Zoo & Downloads
-We provide pre-trained Cityscaeps weights and deployment-ready models. You can download all versions from the Google Drive folders below:
+We provide pre-trained Cityscapes weights and deployment-ready models. You can download all versions from the Google Drive folders below:
 
 * 📂 [**Download Checkpoints (.ckpt)**](https://drive.google.com/drive/folders/1XLfGQrf5_EBR4U8hPeuwcVP5UrneiFZ2?usp=drive_link) — Full training weights for research.
 * 📂 [**Download Optimized Models (.onnx)**](https://drive.google.com/drive/folders/1SjnIaa01m8DtJH0YQ3hptzrItZha1iMB?usp=drive_link) — Optimized for edge deployment (ONNX Runtime).
@@ -24,7 +24,7 @@ We provide pre-trained Cityscaeps weights and deployment-ready models. You can d
 ---
 ## 3. Quantitative Results & Generalization
 
-We evaluated MeTU on both rigid urban scenes (Cityscapes) and non-rigid general objects (PASCAL VOC 2012) at a `512x1024` resolution and `512x512` resoltuon respectively.
+We evaluated MeTU on both rigid urban scenes (Cityscapes) and non-rigid general objects (PASCAL VOC 2012) at a `512x1024` resolution and `512x512` resoltion respectively.
 
 
 ### 3.1. Urban Scene Segmentation (Cityscapes)
@@ -146,7 +146,8 @@ To validate the practical applicability and inference stability of MeTU in real-
 To ensure perfect reproducibility and skip the tedious environment setup (CUDA, PyTorch, etc.), we provide a pre-configured Docker image. 
 
 ### 1. Pull the Image
-The image includes all necessary dependencies: **CUDA 12.1, PyTorch 2.10, and ONNX Runtime**.
+The image includes all necessary dependencies: PyTorch 2.10.0 (with CUDA 12.8 Runtime), CUDA 12.3 Toolkit, and ONNX Runtime.
+
 ```bash
 docker pull duriankim/metu-research:v1
 ```
