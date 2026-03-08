@@ -40,7 +40,9 @@ We evaluated the models on the Cityscapes dataset to validate their performance 
 | MobileViT-xs + DeepLab V3| 2.94 | 8.02 | 65.31 |
 | LRASPP-MobileNet V3 (xxs) | 1.08 | **0.71** | 58.80 |
 
-> **Official Leaderboard:** You can verify the detailed benchmark results on the [Cityscapes Leaderboard](https://www.cityscapes-dataset.com/anonymous-results/?id=6a412140af37d79e7d4401500b299cd310a36e89fa9e15bed565c7b66dc7e95a).
+> **Official Leaderboards:** 
+> - [MeTU-xs Results](xs_공식_리더보드_링크_입력)
+> - [MeTU-xxs Results](xxs_리더보드_링크_입력)
 
 <br>
 
