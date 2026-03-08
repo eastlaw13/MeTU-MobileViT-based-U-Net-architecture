@@ -13,18 +13,20 @@
 
 We evaluated MeTU on both rigid urban scenes (Cityscapes) and non-rigid general objects (PASCAL VOC 2012) at a `512x1024` resolution.
 
+We evaluated MeTU on both rigid urban scenes (Cityscapes) and non-rigid general objects (PASCAL VOC 2012) at a `512x1024` resolution.
+
 ### 2.1. Urban Scene Segmentation (Cityscapes)
 
 | Model | Params (M) | FLOPs (G) | mIoU (%) |
 | --- | --- | --- | --- |
-| **MeTU-xs (Ours)** | 2.03 | 12.14 | **70.69** |
-| **MeTU-xxs (Ours)** | **1.02** | 7.14 | 67.07 |
-| Segformer-b0 | 3.72 | 18.01 | 67.57 |
-| MobileViT + DeepLab V3 (xs) | 2.94 | 8.02 | 61.97 |
-| LRASPP-MobileNet V3 | 1.08 | **0.71** | 58.73 |
+| **MeTU-xs (Ours)** | 2.03 | 12.14 | **73.46** |
+| **MeTU-xxs (Ours)** | **1.02** | 7.14 | 68.49 |
+| Segformer-b0 | 3.72 | 18.01 | 70.46 |
+| MobileViT + DeepLab V3 (xs) | 2.94 | 8.02 | 65.31 |
+| LRASPP-MobileNet V3 | 1.08 | **0.71** | 58.80 |
 
-* **SOTA Efficiency:** **MeTU-xxs** achieves comparable performance to Segformer-b0 (67.1% vs 67.6% mIoU) while requiring **~72.5% fewer parameters** and **~60% fewer FLOPs**.
-* **High-Resolution Detail Preservation:** The U-Net skip-connections explicitly preserve spatial details, allowing MeTU-xs to significantly outperform Segformer-b0 on thin/small objects like `Bicycle` (+8.3%p) and `Pole` (+4.5%p).
+* **SOTA Efficiency:** **MeTU-xs** outperforms the transformer-based Segformer-b0 (73.46% vs 70.46% mIoU) while using **~45.5% fewer parameters** and **~32.6% fewer FLOPs**. Furthermore, **MeTU-xxs** achieves highly competitive performance (68.49%) requiring **~72.5% fewer parameters** than Segformer-b0.
+* **High-Resolution Detail Preservation:** The U-Net skip-connections explicitly preserve spatial details, allowing MeTU-xs to significantly outperform Segformer-b0 on thin/small objects like `Pole` (+5.0%p) and `Traffic Sign` (+3.3%p).
 
 ### 2.2. General Object Segmentation (PASCAL VOC 2012)
 
