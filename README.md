@@ -141,7 +141,7 @@ To validate the practical applicability and inference stability of MeTU in real-
 
 ---
 
-## 🐳 Environment Setup (Docker)
+## Environment Setup (Docker)
 
 To ensure perfect reproducibility and skip the tedious environment setup (CUDA, PyTorch, etc.), we provide a pre-configured Docker image. 
 
