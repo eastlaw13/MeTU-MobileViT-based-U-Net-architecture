@@ -140,3 +140,32 @@ To validate the practical applicability and inference stability of MeTU in real-
   Instead, architectural factors such as **memory access patterns, feature map resolution, and operator scheduling** play a critical role in determining inference throughput on resource-constrained CPUs.
 
 ---
+
+## 🐳 Environment Setup (Docker)
+
+To ensure perfect reproducibility and skip the tedious environment setup (CUDA, PyTorch, etc.), we provide a pre-configured Docker image. 
+
+### 1. Pull the Image
+The image includes all necessary dependencies: **CUDA 12.1, PyTorch 2.10, and ONNX Runtime**.
+```bash
+docker pull duriankim/metu-research:v1
+```
+
+### 2. Run the Container
+Execute the following command in your project root. This will mount your local code into the container and enable GPU acceleration.
+
+```bash
+# For Linux/macOS
+docker run --gpus all -it --rm -v $(pwd):/workspace duriankim/metu-research:v1
+
+# For Windows (PowerShell)
+# docker run --gpus all -it --rm -v ${PWD}:/workspace duriankim/metu-research:v1
+```
+
+### 3. Verify the Setup
+Once inside the container, verify that your GPU is correctly recognized:
+
+```bash
+nvidia-smi
+python -c "import torch; print(f'GPU Available: {torch.cuda.is_available()}')"
+```
