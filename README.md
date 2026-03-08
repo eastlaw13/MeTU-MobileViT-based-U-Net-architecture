@@ -73,7 +73,7 @@ We evaluated the models on the PASCAL VOC 2012 dataset (excluding the background
         <img src="https://img.youtube.com/vi/zDayuDF8Rgo/maxresdefault.jpg" alt="MeTU Robustness Demo Video" width="80%">
     </a>
     <br>
-    <em>Visualization of MeTU and baseline models robustness against varying out-of-distribution (OOD) corruptions. (Click to watch the full demo)</em>
+    <em>Visualization of MeTU and baseline models robustness. (Click to watch the full demo)</em>
 </div>
 
 
