@@ -44,32 +44,32 @@ MODEL_LIST = [
     {
         "name": "MeTU-xxs",
         "model": lt_MeTU,
-        "ckpt": "logs/Cityscapes/0227/[MeTU-xxs]-v3/best/mIoU=0.671.ckpt",
+        "ckpt": "ckpt/MeTU_xxs/mIoU=0.685.ckpt",
     },
     {
         "name": "MeTU-xs",
         "model": lt_MeTU,
-        "ckpt": "logs/Cityscapes/0228/[MeTU-xs]-v3/best/mIoU=0.707.ckpt",
+        "ckpt": "ckpt/MeTU_xs/mIoU=0.735.ckpt",
     },
     {
         "name": "Segformer-b0",
         "model": lt_segformerb0,
-        "ckpt": "logs/Cityscapes/0225/Segformer-b0/best/mIoU=0.676.ckpt",
+        "ckpt": "ckpt/Segformer_b0/mIoU=0.705.ckpt",
     },
     {
-        "name": "MobileViT + DeepLab V3 - xss",
+        "name": "MobileViT-xxs + DeepLab V3",
         "model": lt_mobilevit_dlv3,
-        "ckpt": "logs/Cityscapes/0225/MobileViT-DL_V3-xxs/best/mIoU=0.600.ckpt",
+        "ckpt": "ckpt/MobileViT_xxs_DLV3/mIoU=0.615.ckpt",
     },
     {
-        "name": "MobileViT + DeepLab V3 - xs",
+        "name": "MobileViT-xs + DeepLab V3",
         "model": lt_mobilevit_dlv3,
-        "ckpt": "logs/Cityscapes/0226/MobileViT-DL_V3-xs/best/mIoU=0.620.ckpt",
+        "ckpt": "ckpt/MobileViT_xs_DLV3/mIoU=0.653.ckpt",
     },
     {
-        "name": "LRASPP-MobileNet V3 -xxs",
+        "name": "LRASPP-MobileNet V3 - xxs",
         "model": lt_lraspp_mv3,
-        "ckpt": "logs/Cityscapes/0226/LRASPP_MV3/best/mIoU=0.587.ckpt",
+        "ckpt": "ckpt/LRASPP_MV3/mIoU=0.588.ckpt",
     },
 ]
 
@@ -136,7 +136,7 @@ for model_cfg in MODEL_LIST:
 save_path = Path("metric/res/Cityscapes")
 save_path.mkdir(exist_ok=True, parents=True)
 
-with open(save_path / "eval.json", "w", encoding="utf-8") as f:
+with open(save_path / "eval_cityscapes.json", "w", encoding="utf-8") as f:
     json.dump(results_list, f, indent=4, ensure_ascii=False)
 
 print(f"\n[Done] All results saved to {save_path}")

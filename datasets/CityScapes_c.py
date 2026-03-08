@@ -18,7 +18,7 @@ class CityscapesCDataset(Dataset):
         self.gt_dir = os.path.join(gt_root, "val")
         self.images = []
         self.masks = []
-        self.transform = transform  # 오타 수정 (transfroms -> transform)
+        self.transform = transform
 
         for city in sorted(os.listdir(self.img_dir)):
             city_img_dir = os.path.join(self.img_dir, city)
