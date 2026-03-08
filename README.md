@@ -13,7 +13,6 @@
 
 We evaluated MeTU on both rigid urban scenes (Cityscapes) and non-rigid general objects (PASCAL VOC 2012) at a `512x1024` resolution.
 
-We evaluated MeTU on both rigid urban scenes (Cityscapes) and non-rigid general objects (PASCAL VOC 2012) at a `512x1024` resolution.
 
 ### 2.1. Urban Scene Segmentation (Cityscapes)
 
@@ -30,15 +29,20 @@ We evaluated MeTU on both rigid urban scenes (Cityscapes) and non-rigid general 
 
 ### 2.2. General Object Segmentation (PASCAL VOC 2012)
 
-| Model | Params (M) | mIoU (%) |
-| --- | --- | --- |
-| **MeTU-xs (Ours)** | 2.03 | **71.30** |
-| **MeTU-xxs (Ours)** | **1.02** | 66.95 |
-| MobileViT + DeepLab V3 (xs) | 2.94 | 69.24 |
-| Segformer-b0 | 3.72 | 62.42 |
+We also evaluated the models on the PASCAL VOC 2012 dataset to validate their robustness on non-rigid and scale-varying general objects.
 
-* **Robust Generalization:** Beyond fixed-perspective driving scenes, MeTU-xs excels on non-rigid objects, outperforming purely hierarchical transformers (Segformer-b0) on complex classes like `cow` (82.3% vs 59.1%) and `horse` (83.9% vs 61.6%).
-* **Architectural Superiority:** Compared to the ASPP module in DeepLab V3, MeTU's spatial connectivity prevents gridding artifacts, leading to massive improvements in web-like structures (e.g., `bicycle`: 53.1% vs 29.6%).
+| Model | Params (M) | FLOPs (G) | mIoU (%) |
+| --- | --- | --- | --- |
+| **MeTU-xs (Ours)** | 2.03 | 12.20 | **71.30** |
+| MobileViT + DeepLab V3 (xs) | 2.94 | 8.03 | 69.24 |
+| **MeTU-xxs (Ours)** | **1.02** | 7.21 | 66.95 |
+| MobileViT + DeepLab V3 (xxs) | 1.85 | 3.21 | 64.72 |
+| Segformer-b0 | 3.72 | 18.03 | 62.42 |
+| LRASPP-MobileNet V3 | 1.08 | **0.71** | 58.99 |
+
+* **Exceptional Robustness to Non-rigid Objects:** While purely transformer-based architectures often struggle with highly deformable objects at very low parameter regimes, **MeTU-xs** outperforms Segformer-b0 by a massive margin (**+8.88%p mIoU**) while utilizing **~45.5% fewer parameters**.
+* **Beating Larger Transformers with 1M Params:** Remarkably, even the ultra-lightweight **MeTU-xxs** (1.02M params) easily surpasses the much heavier Segformer-b0 (66.95% vs 62.42% mIoU).
+* **Decoder Efficiency:** Compared to the standard `MobileViT + DeepLab V3` counterpart, MeTU architectures consistently achieve higher mIoU using fewer parameters, demonstrating that our proposed U-Net-like skip connection design is highly superior at capturing complex shapes like `bicycle` (+23.5%p) and `bottle` (+4.6%p) compared to ASPP-based decoders.
 
 ---
 
