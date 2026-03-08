@@ -40,6 +40,8 @@ We evaluated the models on the Cityscapes dataset to validate their performance 
 | MobileViT-xs + DeepLab V3| 2.94 | 8.02 | 65.31 |
 | LRASPP-MobileNet V3 (xxs) | 1.08 | **0.71** | 58.80 |
 
+> **Official Leaderboard:** You can verify the detailed benchmark results on the [Cityscapes Leaderboard](https://www.cityscapes-dataset.com/anonymous-results/?id=6a412140af37d79e7d4401500b299cd310a36e89fa9e15bed565c7b66dc7e95a).
+
 <br>
 
 * **SOTA Efficiency:** **MeTU-xs** outperforms the transformer-based Segformer-b0 (73.46% vs 70.46% mIoU) while using **~45.5% fewer parameters** and **~32.6% fewer FLOPs**. Furthermore, **MeTU-xxs** achieves highly competitive performance (68.49%), requiring **~72.5% fewer parameters** than Segformer-b0 and consistently beating the equivalently sized `MobileViT-xxs + DeepLab V3` by a large margin (+7.02%p).
