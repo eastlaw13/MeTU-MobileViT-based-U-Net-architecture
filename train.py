@@ -13,9 +13,13 @@ from models.modelzoo import lt_segformerb0, lt_mobilevit_dlv3, lt_lraspp_mv3
 from models.MeTU import lt_MeTU
 from torch.utils.data import DataLoader
 
-MODEL_NAME = "[MeTU-xxs]-v3"
-DATE = "0301"
-DATASET_NAME = "VOC2012"
+MODEL_NAME = "Segformer-b0"
+
+# MODEL_NAME = "MobileViT-DL_V3-xs"
+# MODEL_NAME = "[MeTU-xxs]-v3_with_famix"
+# MODEL_NAME = "LRASPP_MV3_with_famix"
+DATE = "0307"
+DATASET_NAME = "Cityscapes"
 BEST_MODEL_PATH = f"./logs/{DATASET_NAME}/{DATE}/{MODEL_NAME}/best"
 
 
@@ -189,7 +193,7 @@ if __name__ == "__main__":
                 save_top_k=3,
             ),
             L.pytorch.callbacks.EarlyStopping(
-                monitor="val/mIoU", patience=30, mode="max"
+                monitor="val/mIoU", patience=20, mode="max"
             ),
             FinalBestModelSaver(final_save_dir=BEST_MODEL_PATH),
         ],
