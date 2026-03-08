@@ -34,32 +34,32 @@ MODEL_LIST = [
     {
         "name": "MeTU-xxs",
         "model": lt_MeTU,
-        "ckpt": "logs/Cityscapes/0307/[MeTU-xxs]-v3_with_famix/best/mIoU=0.685.ckpt",
+        "ckpt": "ckpt/MeTU_xxs/mIoU=0.685.ckpt",
     },
     {
         "name": "MeTU-xs",
         "model": lt_MeTU,
-        "ckpt": "logs/Cityscapes/0307/[MeTU-xs]-v3_with_famix/best/mIoU=0.735.ckpt",
+        "ckpt": "ckpt/MeTU_xs/mIoU=0.735.ckpt",
     },
     {
         "name": "Segformer-b0",
         "model": lt_segformerb0,
-        "ckpt": "logs/Cityscapes/0307/Segformer-b0/best/mIoU=0.705.ckpt",
+        "ckpt": "ckpt/Segformer_b0/mIoU=0.705.ckpt",
     },
     {
-        "name": "MobileViT + DeepLab V3 - xss",
+        "name": "MobileViT-xxs + DeepLab V3",
         "model": lt_mobilevit_dlv3,
-        "ckpt": "logs/Cityscapes/0307/MobileViT-DL_V3-xxs/best/mIoU=0.615.ckpt",
+        "ckpt": "ckpt/MobileViT_xxs_DLV3/mIoU=0.615.ckpt",
     },
     {
-        "name": "MobileViT + DeepLab V3 - xs",
+        "name": "MobileViT-xs + DeepLab V3",
         "model": lt_mobilevit_dlv3,
-        "ckpt": "logs/Cityscapes/0307/MobileViT-DL_V3-xs/best/mIoU=0.653.ckpt",
+        "ckpt": "ckpt/MobileViT_xs_DLV3/mIoU=0.653.ckpt",
     },
     {
-        "name": "LRASPP-MobileNet V3 -xxs",
+        "name": "LRASPP-MobileNet V3 - xxs",
         "model": lt_lraspp_mv3,
-        "ckpt": "logs/Cityscapes/0307/LRASPP_MV3_with_famix/best/mIoU=0.588.ckpt",
+        "ckpt": "ckpt/LRASPP_MV3/mIoU=0.588.ckpt",
     },
 ]
 
