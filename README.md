@@ -4,17 +4,30 @@
 # MeTU: Lightweight Semantic Segmentation for Edge Devices
 
 ## 1. Project Overview
+**MeTU** is a highly optimized, lightweight semantic segmentation model designed for resource-constrained edge devices. By integrating a **MobileViT** backbone with a **U-Net** -like decoder, MeTU effectively captures both global context and high-resolution spatial details. 
 
-**MeTU** is a highly optimized, lightweight semantic segmentation model designed for resource-constrained edge devices. By integrating a **MobileViT** backbone with a **U-Net** based decoder, MeTU effectively captures both global context and high-resolution spatial details. This project comprehensively evaluates the architecture against SOTA lightweight models across urban driving scenes, general objects, adverse weather conditions, and actual edge hardware (Raspberry Pi 4B).
+This project provides a comprehensive evaluation of the architecture against SOTA lightweight models across:
+* **Urban driving scenes** (Cityscapes)
+* **General object segmentation** (PASCAL VOC 2012)
+* **Robustness under adverse weather** (Cityscapes-C)
+* **Real-world edge hardware performance** (Raspberry Pi 4B)
 
 ---
 
-## 2. Quantitative Results & Generalization
+## 2. Model Zoo & Downloads
+We provide pre-trained Cityscaeps weights and deployment-ready models. You can download all versions from the Google Drive folders below:
 
-We evaluated MeTU on both rigid urban scenes (Cityscapes) and non-rigid general objects (PASCAL VOC 2012) at a `512x1024` resolution.
+* 📂 [**Download Checkpoints (.ckpt)**](https://drive.google.com/drive/folders/1XLfGQrf5_EBR4U8hPeuwcVP5UrneiFZ2?usp=drive_link) — Full training weights for research.
+* 📂 [**Download Optimized Models (.onnx)**](https://drive.google.com/drive/folders/1SjnIaa01m8DtJH0YQ3hptzrItZha1iMB?usp=drive_link) — Optimized for edge deployment (ONNX Runtime).
+> **Note:** The ONNX models are optimized for CPU inference using ONNX Runtime.
+
+---
+## 3. Quantitative Results & Generalization
+
+We evaluated MeTU on both rigid urban scenes (Cityscapes) and non-rigid general objects (PASCAL VOC 2012) at a `512x1024` resolution and `512x512` resoltuon respectively.
 
 
-### 2.1. Urban Scene Segmentation (Cityscapes)
+### 3.1. Urban Scene Segmentation (Cityscapes)
 
 We evaluated the models on the Cityscapes dataset to validate their performance in rigid, high-resolution urban environments.
 
@@ -23,42 +36,50 @@ We evaluated the models on the Cityscapes dataset to validate their performance 
 | **MeTU-xxs (Ours)** | **1.02** | 7.14 | 68.49 |
 | **MeTU-xs (Ours)** | 2.03 | 12.14 | **73.46** |
 | Segformer-b0 | 3.72 | 18.01 | 70.46 |
-| MobileViT-xxs + DeepLab V3| 1.86 | 3.21 | 61.50 |
+| MobileViT-xxs + DeepLab V3| 1.86 | 3.21 | 61.47 |
 | MobileViT-xs + DeepLab V3| 2.94 | 8.02 | 65.31 |
 | LRASPP-MobileNet V3 (xxs) | 1.08 | **0.71** | 58.80 |
 
-* **SOTA Efficiency:** **MeTU-xs** outperforms the transformer-based Segformer-b0 (73.46% vs 70.46% mIoU) while using **~45.5% fewer parameters** and **~32.6% fewer FLOPs**. Furthermore, **MeTU-xxs** achieves highly competitive performance (68.49%), requiring **~72.5% fewer parameters** than Segformer-b0 and consistently beating the equivalently sized `MobileViT-xxs + DeepLab V3` by a large margin (+6.99%p).
+<br>
+
+* **SOTA Efficiency:** **MeTU-xs** outperforms the transformer-based Segformer-b0 (73.46% vs 70.46% mIoU) while using **~45.5% fewer parameters** and **~32.6% fewer FLOPs**. Furthermore, **MeTU-xxs** achieves highly competitive performance (68.49%), requiring **~72.5% fewer parameters** than Segformer-b0 and consistently beating the equivalently sized `MobileViT-xxs + DeepLab V3` by a large margin (+7.02%p).
 * **High-Resolution Detail Preservation:** The U-Net skip-connections explicitly preserve spatial details lost during aggressive downsampling. This allows **MeTU-xs** to significantly outperform Segformer-b0 on thin/small objects that require fine-grained localization, such as `Pole` (+5.0%p) and `Traffic Sign` (+3.3%p).
 
-### 2.2. General Object Segmentation (PASCAL VOC 2012)
+<br>
+
+### 3.2. General Object Segmentation (PASCAL VOC 2012)
 
 We evaluated the models on the PASCAL VOC 2012 dataset (excluding the background class) to rigorously validate their generalization capabilities and robustness on non-rigid, scale-varying general objects.
 
 | Model | Params (M) | FLOPs (G) | mIoU (%) |
 | --- | --- | --- | --- |
 | **MeTU-xxs (Ours)** | **1.02** | 7.21 | 65.78 |
-| **MeTU-xs (Ours)** | 2.03 | 12.20 | **73.46** |
+| **MeTU-xs (Ours)** | 2.03 | 12.20 | **70.31** |
 | Segformer-b0 | 3.72 | 18.01 | 61.08 |
 | MobileViT-xxs + DeepLab V3 | 1.86 | 3.21 | 63.50 |
 | MobileViT-xs + DeepLab V3 | 2.94 | 8.03 | 68.23 |
 | LRASPP-MobileNet V3 (xxs) | 1.08 | **0.71** | 57.56 |
 
-* **Inductive Bias & Non-rigid Object Robustness:** While purely transformer-based architectures like Segformer-b0 struggle significantly with highly deformable objects due to a lack of inductive bias at low-parameter regimes (dropping to 61.08% on foreground objects), our hybrid **MeTU-xs** effectively leverages both local CNN features and global self-attention to outperform it by a massive margin (**+12.38%p mIoU**), despite using **~45% fewer parameters**.
+<br>
+
+* **Inductive Bias & Non-rigid Object Robustness:** While purely transformer-based architectures like Segformer-b0 struggle significantly with highly deformable objects due to a lack of inductive bias at low-parameter regimes (dropping to 61.08% on foreground objects), our hybrid **MeTU-xs** effectively leverages both local CNN features and global self-attention to outperform it by a massive margin (**+9.23%p mIoU**), despite using **~45% fewer parameters**.
 * **Consistent Decoder Superiority across Scales:** When compared to the traditional `MobileViT + DeepLab V3` counterparts using the exact same backbones, MeTU architectures demonstrate absolute parameter efficiency. **MeTU-xs** achieves +5.23%p higher mIoU with ~31% fewer parameters, and our ultra-lightweight **MeTU-xxs** achieves +2.28%p higher mIoU while requiring **nearly half the parameters** (~45% reduction) of the `DeepLab V3 (xxs)` decoder. This decisively proves the efficiency of our U-Net-like skip connections over heavy ASPP blocks in strict edge constraints.
+
 ---
 
-## 3. Robustness in Adverse Conditions (Cityscapes-C)
+## 4. Robustness in Adverse Conditions (Cityscapes-C)
 <div align="center">
-    <a href="https://youtu.be/k2GShFCuxqQ">
-        <img src="https://img.youtube.com/vi/k2GShFCuxqQ/maxresdefault.jpg" alt="MeTU Robustness Demo Video" width="80%">
+    <a href="https://youtu.be/zDayuDF8Rgo">
+        <img src="https://img.youtube.com/vi/zDayuDF8Rgo/maxresdefault.jpg" alt="MeTU Robustness Demo Video" width="80%">
     </a>
     <br>
-    <em>Visualization of MeTU-xs robustness against varying out-of-distribution (OOD) corruptions. (Click to watch the full demo)</em>
+    <em>Visualization of MeTU and baseline models robustness against varying out-of-distribution (OOD) corruptions. (Click to watch the full demo)</em>
 </div>
 
 
 To assess zero-shot robustness against unseen real-world corruptions, we benchmarked our models on the Cityscapes-C dataset across 5 severity levels under strictly out-of-distribution (OOD) conditions (i.e., no corruption augmentations were applied during training).
 
+<br>
 
 | Model | Params (M) | Clean mIoU (%) | mPC (%) |
 | --- | --- | --- | --- |
@@ -69,11 +90,13 @@ To assess zero-shot robustness against unseen real-world corruptions, we benchma
 | MobileViT-xs + DeepLab V3 | 2.94 | 65.31 | 41.12 |
 | LRASPP-MobileNet V3 (xxs) | 1.08 | 58.80 | 36.86 |
 
+<br>
+
 * **Architecture Trade-offs:** While our hybrid CNN-Transformer architecture (MeTU-xs) dominates on clean data (+3.0%p mIoU over Segformer-b0), the pure-transformer Segformer-b0 shows stronger resistance to extreme corruptions. This highlights the known phenomenon that pure transformers rely more on global shape bias rather than local textures, granting them inherent robustness at the cost of heavier parameters (~1.8x larger than ours).
 * **Superior Decoder Design:** Compared to the standard `MobileViT-xs + DeepLab V3` counterpart, **MeTU-xs** demonstrates significantly higher robustness (**+2.75%p mPC**) while remaining much more parameter-efficient. Furthermore, even our ultra-lightweight **MeTU-xxs (1.02M)** outperforms the heavier `MobileViT-xxs + DeepLab V3 (1.85M)` by **+3.73%p mPC**. This consistently proves that our explicit skip-connection mechanism is functionally more reliable under unseen conditions than traditional ASPP blocks in lightweight regimes.
 ---
 
-##  4. Edge Device Deployment: Raspberry Pi 4B
+##  5. Edge Device Deployment: Raspberry Pi 4B
 
 To validate the practical applicability and inference stability of MeTU in real-world edge scenarios, we benchmarked the models on a **Raspberry Pi 4B (4GB RAM, ARM Cortex-A72 CPU-only)** using **ONNX Runtime**.
 
@@ -82,7 +105,7 @@ To validate the practical applicability and inference stability of MeTU in real-
 
 ---
 
-### 4.1. FP32 Inference Performance (Accuracy vs. Speed Trade-off)
+### 5.1. FP32 Inference Performance (Accuracy vs. Speed Trade-off)
 
 | Model | Params (M) | Average (ms) | P50 (ms) | P90 (ms) | P99 (ms) | Throughput (FPS) |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|
