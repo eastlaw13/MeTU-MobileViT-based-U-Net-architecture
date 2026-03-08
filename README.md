@@ -76,6 +76,7 @@ We evaluated the models on the PASCAL VOC 2012 dataset (excluding the background
     <em>Visualization of MeTU and baseline models robustness. (Click to watch the full demo)</em>
 </div>
 
+<br>
 
 To assess zero-shot robustness against unseen real-world corruptions, we benchmarked our models on the Cityscapes-C dataset across 5 severity levels under strictly out-of-distribution (OOD) conditions (i.e., no corruption augmentations were applied during training).
 
